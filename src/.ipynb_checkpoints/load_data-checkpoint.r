@@ -2,6 +2,10 @@ zoning_df = read.csv('../data/zoning.csv')
 listing_df = read.csv('../data/listing.csv')
 sale_df = read.csv('../data/sale.csv')
 
+numeric_updated_df = read.csv('../data/numeric_updated_df.csv')
+final_ames_df = read.csv('../data/final_ames_df.csv')
+top_ten_df = read.csv('../data/top_ten_df.csv')
+
 housing_df = merge(zoning_df, listing_df, by="Id")
 housing_df = merge(housing_df, sale_df, by="Id")
 
@@ -77,6 +81,7 @@ for (feature in empty_means_NA) {
 housing_df <- na.omit(housing_df)
 
 numeric_df = Filter(is.numeric, housing_df)
+sale_price <- numeric_df$SalePrice
 numeric_df$SalePrice <- NULL
 numeric_log_df = log(numeric_df+0.000001)
 numeric_log_sc_df = data.frame(scale(numeric_log_df))

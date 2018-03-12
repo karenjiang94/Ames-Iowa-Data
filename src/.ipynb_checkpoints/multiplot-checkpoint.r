@@ -12,7 +12,7 @@ library(ggplot2)
 library(grid)
 
 library(repr)
-options(repr.plot.width=20, repr.plot.height=8)
+options(repr.plot.width=10, repr.plot.height=4)
 
 multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
 
