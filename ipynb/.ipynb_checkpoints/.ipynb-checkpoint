@@ -1,0 +1,735 @@
+{
+ "cells": [
+  {
+   "cell_type": "code",
+   "execution_count": 1,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "import pandas as pd\n",
+    "import numpy as np"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 2,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "from sklearn.model_selection import train_test_split\n",
+    "from sklearn.preprocessing import StandardScaler\n",
+    "from tqdm import tqdm \n",
+    "from time import time"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 3,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "from sklearn.metrics import accuracy_score, f1_score"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 4,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "from sklearn.linear_model import Ridge\n",
+    "from sklearn.linear_model import Lasso\n",
+    "from sklearn.neighbors import KNeighborsRegressor\n",
+    "from sklearn.tree import DecisionTreeRegressor\n",
+    "from sklearn.svm import SVR"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 5,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "/home/jovyan/Ames-Iowa-Data\n"
+     ]
+    }
+   ],
+   "source": [
+    "cd .."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 7,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "df = pd.read_csv('data/final_ames_df.csv')\n",
+    "unscaled = pd.read_csv('data/unscaled_ames_df.csv')"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 8,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "<div>\n",
+       "<style scoped>\n",
+       "    .dataframe tbody tr th:only-of-type {\n",
+       "        vertical-align: middle;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe tbody tr th {\n",
+       "        vertical-align: top;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe thead th {\n",
+       "        text-align: right;\n",
+       "    }\n",
+       "</style>\n",
+       "<table border=\"1\" class=\"dataframe\">\n",
+       "  <thead>\n",
+       "    <tr style=\"text-align: right;\">\n",
+       "      <th></th>\n",
+       "      <th>Unnamed: 0</th>\n",
+       "      <th>MSSubClass.20</th>\n",
+       "      <th>MSSubClass.30</th>\n",
+       "      <th>MSSubClass.40</th>\n",
+       "      <th>MSSubClass.45</th>\n",
+       "      <th>MSSubClass.50</th>\n",
+       "      <th>MSSubClass.60</th>\n",
+       "      <th>MSSubClass.70</th>\n",
+       "      <th>MSSubClass.75</th>\n",
+       "      <th>MSSubClass.80</th>\n",
+       "      <th>...</th>\n",
+       "      <th>YearBuilt</th>\n",
+       "      <th>YearRemodAdd</th>\n",
+       "      <th>BsmtFinSF1</th>\n",
+       "      <th>BsmtUnfSF</th>\n",
+       "      <th>TotalBsmtSF</th>\n",
+       "      <th>FirstFlrSF</th>\n",
+       "      <th>GrLivArea</th>\n",
+       "      <th>GarageYrBlt</th>\n",
+       "      <th>GarageArea</th>\n",
+       "      <th>SalePrice</th>\n",
+       "    </tr>\n",
+       "  </thead>\n",
+       "  <tbody>\n",
+       "    <tr>\n",
+       "      <th>0</th>\n",
+       "      <td>1</td>\n",
+       "      <td>-0.760586</td>\n",
+       "      <td>-0.223368</td>\n",
+       "      <td>-0.052559</td>\n",
+       "      <td>-0.091287</td>\n",
+       "      <td>-0.331813</td>\n",
+       "      <td>1.974674</td>\n",
+       "      <td>-0.207617</td>\n",
+       "      <td>-0.105556</td>\n",
+       "      <td>-0.202142</td>\n",
+       "      <td>...</td>\n",
+       "      <td>1.050985</td>\n",
+       "      <td>0.882076</td>\n",
+       "      <td>0.720502</td>\n",
+       "      <td>0.089174</td>\n",
+       "      <td>0.108421</td>\n",
+       "      <td>-0.802632</td>\n",
+       "      <td>0.531537</td>\n",
+       "      <td>1.022655</td>\n",
+       "      <td>0.277110</td>\n",
+       "      <td>0.563968</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>1</th>\n",
+       "      <td>2</td>\n",
+       "      <td>1.313870</td>\n",
+       "      <td>-0.223368</td>\n",
+       "      <td>-0.052559</td>\n",
+       "      <td>-0.091287</td>\n",
+       "      <td>-0.331813</td>\n",
+       "      <td>-0.506064</td>\n",
+       "      <td>-0.207617</td>\n",
+       "      <td>-0.105556</td>\n",
+       "      <td>-0.202142</td>\n",
+       "      <td>...</td>\n",
+       "      <td>0.169230</td>\n",
+       "      <td>-0.418806</td>\n",
+       "      <td>0.755273</td>\n",
+       "      <td>0.204922</td>\n",
+       "      <td>0.226417</td>\n",
+       "      <td>0.421404</td>\n",
+       "      <td>-0.378547</td>\n",
+       "      <td>-0.092048</td>\n",
+       "      <td>0.239049</td>\n",
+       "      <td>0.216827</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>2</th>\n",
+       "      <td>3</td>\n",
+       "      <td>-0.760586</td>\n",
+       "      <td>-0.223368</td>\n",
+       "      <td>-0.052559</td>\n",
+       "      <td>-0.091287</td>\n",
+       "      <td>-0.331813</td>\n",
+       "      <td>1.974674</td>\n",
+       "      <td>-0.207617</td>\n",
+       "      <td>-0.105556</td>\n",
+       "      <td>-0.202142</td>\n",
+       "      <td>...</td>\n",
+       "      <td>0.986079</td>\n",
+       "      <td>0.834209</td>\n",
+       "      <td>0.680661</td>\n",
+       "      <td>0.281818</td>\n",
+       "      <td>0.130339</td>\n",
+       "      <td>-0.575272</td>\n",
+       "      <td>0.661806</td>\n",
+       "      <td>0.940601</td>\n",
+       "      <td>0.299701</td>\n",
+       "      <td>0.737866</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>3</th>\n",
+       "      <td>4</td>\n",
+       "      <td>-0.760586</td>\n",
+       "      <td>-0.223368</td>\n",
+       "      <td>-0.052559</td>\n",
+       "      <td>-0.091287</td>\n",
+       "      <td>-0.331813</td>\n",
+       "      <td>-0.506064</td>\n",
+       "      <td>4.813248</td>\n",
+       "      <td>-0.105556</td>\n",
+       "      <td>-0.202142</td>\n",
+       "      <td>...</td>\n",
+       "      <td>-1.868071</td>\n",
+       "      <td>-0.710305</td>\n",
+       "      <td>0.594138</td>\n",
+       "      <td>0.321442</td>\n",
+       "      <td>0.070659</td>\n",
+       "      <td>-0.437788</td>\n",
+       "      <td>0.543775</td>\n",
+       "      <td>0.817366</td>\n",
+       "      <td>0.311532</td>\n",
+       "      <td>-0.433016</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>4</th>\n",
+       "      <td>5</td>\n",
+       "      <td>-0.760586</td>\n",
+       "      <td>-0.223368</td>\n",
+       "      <td>-0.052559</td>\n",
+       "      <td>-0.091287</td>\n",
+       "      <td>-0.331813</td>\n",
+       "      <td>1.974674</td>\n",
+       "      <td>-0.207617</td>\n",
+       "      <td>-0.105556</td>\n",
+       "      <td>-0.202142</td>\n",
+       "      <td>...</td>\n",
+       "      <td>0.953601</td>\n",
+       "      <td>0.738402</td>\n",
+       "      <td>0.712502</td>\n",
+       "      <td>0.303824</td>\n",
+       "      <td>0.196843</td>\n",
+       "      <td>0.114615</td>\n",
+       "      <td>1.283624</td>\n",
+       "      <td>0.899543</td>\n",
+       "      <td>0.368943</td>\n",
+       "      <td>1.018339</td>\n",
+       "    </tr>\n",
+       "  </tbody>\n",
+       "</table>\n",
+       "<p>5 rows × 404 columns</p>\n",
+       "</div>"
+      ],
+      "text/plain": [
+       "   Unnamed: 0  MSSubClass.20  MSSubClass.30  MSSubClass.40  MSSubClass.45  \\\n",
+       "0           1      -0.760586      -0.223368      -0.052559      -0.091287   \n",
+       "1           2       1.313870      -0.223368      -0.052559      -0.091287   \n",
+       "2           3      -0.760586      -0.223368      -0.052559      -0.091287   \n",
+       "3           4      -0.760586      -0.223368      -0.052559      -0.091287   \n",
+       "4           5      -0.760586      -0.223368      -0.052559      -0.091287   \n",
+       "\n",
+       "   MSSubClass.50  MSSubClass.60  MSSubClass.70  MSSubClass.75  MSSubClass.80  \\\n",
+       "0      -0.331813       1.974674      -0.207617      -0.105556      -0.202142   \n",
+       "1      -0.331813      -0.506064      -0.207617      -0.105556      -0.202142   \n",
+       "2      -0.331813       1.974674      -0.207617      -0.105556      -0.202142   \n",
+       "3      -0.331813      -0.506064       4.813248      -0.105556      -0.202142   \n",
+       "4      -0.331813       1.974674      -0.207617      -0.105556      -0.202142   \n",
+       "\n",
+       "     ...      YearBuilt  YearRemodAdd  BsmtFinSF1  BsmtUnfSF  TotalBsmtSF  \\\n",
+       "0    ...       1.050985      0.882076    0.720502   0.089174     0.108421   \n",
+       "1    ...       0.169230     -0.418806    0.755273   0.204922     0.226417   \n",
+       "2    ...       0.986079      0.834209    0.680661   0.281818     0.130339   \n",
+       "3    ...      -1.868071     -0.710305    0.594138   0.321442     0.070659   \n",
+       "4    ...       0.953601      0.738402    0.712502   0.303824     0.196843   \n",
+       "\n",
+       "   FirstFlrSF  GrLivArea  GarageYrBlt  GarageArea  SalePrice  \n",
+       "0   -0.802632   0.531537     1.022655    0.277110   0.563968  \n",
+       "1    0.421404  -0.378547    -0.092048    0.239049   0.216827  \n",
+       "2   -0.575272   0.661806     0.940601    0.299701   0.737866  \n",
+       "3   -0.437788   0.543775     0.817366    0.311532  -0.433016  \n",
+       "4    0.114615   1.283624     0.899543    0.368943   1.018339  \n",
+       "\n",
+       "[5 rows x 404 columns]"
+      ]
+     },
+     "execution_count": 8,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "df.head(5)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 9,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "final_ames_df = df.drop(['Unnamed: 0'], axis = 1)\n",
+    "target = final_ames_df['SalePrice']\n",
+    "features = final_ames_df.drop('SalePrice', axis = 1)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 11,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "unscaled_ames_df = unscaled.drop(['Unnamed: 0'], axis = 1)\n",
+    "unsc_target = unscaled_ames_df['SalePrice']\n",
+    "unsc_features = unscaled_ames_df.drop('SalePrice', axis = 1)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 10,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "X_train, X_test, y_train, y_test = train_test_split(features, target)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 12,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "X_train_unsc, X_test_unsc, y_train_unsc, y_test_unsc = train_test_split(unsc_features, unsc_target)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Ridge Regression\n",
+    "\n",
+    "Ridge Regression runs a linear least squares regression with an L2-regularization.\n",
+    "\n",
+    "The penalty is determined using the L2-norm loss function which is the Least Squares Error.\n",
+    "$$ S = \\sum_{i = 1}^n (y_i - f(x_i))^2 $$"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 16,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "0.95529800966537626"
+      ]
+     },
+     "execution_count": 16,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "ridge = Ridge()\n",
+    "ridge.fit(X_train, y_train)\n",
+    "ridge.predict(X_train)\n",
+    "ridge.score(X_train, y_train)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 17,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "0.95265076417825612"
+      ]
+     },
+     "execution_count": 17,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "ridge_unsc = Ridge()\n",
+    "ridge_unsc.fit(X_train_unsc, y_train_unsc)\n",
+    "ridge_unsc.predict(X_train_unsc)\n",
+    "ridge_unsc.score(X_train_unsc, y_train_unsc)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Lasso Regression\n",
+    "\n",
+    "Lasso Regression runs a linear least squares regression with L1-regularization.\n",
+    "\n",
+    "The penality is determined by using the L1-norm loss function which is Least Absolute error.\n",
+    "\n",
+    "$$ S = \\sum_{i=1}^n | y_i - f(x_i)|$$"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 33,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "0.80513332855804021"
+      ]
+     },
+     "execution_count": 33,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "lasso = Lasso(alpha=0.1)\n",
+    "lasso.fit(X_train, y_train)\n",
+    "lasso.predict(X_train)\n",
+    "lasso.score(X_train, y_train)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 45,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "0.70554203331787124"
+      ]
+     },
+     "execution_count": 45,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "lasso.score(X_test_unsc, y_test_unsc)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 32,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "0.79502116216344187"
+      ]
+     },
+     "execution_count": 32,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "lasso_unsc = Lasso(alpha=0.1)\n",
+    "lasso_unsc.fit(X_train_unsc, y_train_unsc)\n",
+    "lasso_unsc.predict(X_train_unsc)\n",
+    "lasso_unsc.score(X_train_unsc, y_train_unsc)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 44,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "0.72523292771515013"
+      ]
+     },
+     "execution_count": 44,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "lasso_unsc.score(X_test_unsc, y_test_unsc)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### K-Nearest Neighbors Regression\n",
+    "\n",
+    "The target is predicted by local interpolation of the targets associated of the nearest neighbors in the training set"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 42,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "0.83420700939258241"
+      ]
+     },
+     "execution_count": 42,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "knn = KNeighborsRegressor()\n",
+    "knn.fit(X_train, y_train)\n",
+    "knn.predict(X_train)\n",
+    "knn.score(X_train, y_train)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 43,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "0.74948785658877448"
+      ]
+     },
+     "execution_count": 43,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "knn.score(X_test, y_test)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Decision Tree Regressor\n",
+    "\n",
+    "The goal is to create a model that predicts the value of a target variable by learning simple decision rules inferred from the data features."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 40,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "DecisionTreeRegressor(criterion='mse', max_depth=None, max_features=None,\n",
+       "           max_leaf_nodes=None, min_impurity_decrease=0.0,\n",
+       "           min_impurity_split=None, min_samples_leaf=1,\n",
+       "           min_samples_split=2, min_weight_fraction_leaf=0.0,\n",
+       "           presort=False, random_state=None, splitter='best')"
+      ]
+     },
+     "execution_count": 40,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "dtr = DecisionTreeRegressor()\n",
+    "dtr.fit(X_train, y_train)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": []
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": []
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": []
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "ridge.fit(X_train, y_train)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "ridge_score = ridge.score(X_train, y_train)\n",
+    "test_scores = []\n",
+    "if ridge_score > 0:\n",
+    "        .append({'feature': feature, 'score' : test_score})"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "def sample_training_set(X_train, y_train, n_pcnt):\n",
+    "    n = X_train.shape[0]*n_pcnt//100\n",
+    "    return n, X_train[:n], y_train[:n]\n",
+    "\n",
+    "def time_function_call(function_call):\n",
+    "    start = time()\n",
+    "    result = function_call\n",
+    "    execution_time = time() - start\n",
+    "    return result, execution_time\n",
+    "\n",
+    "def run_model(model, model_name, n_pcnt, data, labels):\n",
+    "\n",
+    "    X_train, X_test, y_train, y_test = train_test_split(data, labels)\n",
+    "    n, X_samp, y_samp = sample_training_set(X_train, y_train, n_pcnt)\n",
+    "    \n",
+    "    _, fit_time = time_function_call(\n",
+    "        model.fit(X_samp, y_samp))\n",
+    "    \n",
+    "    train_pred, train_pred_time = time_function_call(\n",
+    "        model.predict(X_samp))\n",
+    "    \n",
+    "    test_pred, test_pred_time = time_function_call(\n",
+    "        model.predict(X_test))    \n",
+    "    \n",
+    "    return {\n",
+    "            'model' : model,\n",
+    "            'model_name' : model_name,\n",
+    "            'n_pcnt' : n_pcnt,\n",
+    "            'n' : n,\n",
+    "            'f1_train_score' : f1_score(y_samp, train_pred),\n",
+    "            'f1_test_score' : f1_score(y_test, test_pred),\n",
+    "            'accuracy_train_score' : model.score(X_samp, y_samp),\n",
+    "            'accuracy_test_score' : model.score(X_test, y_test),\n",
+    "            'fit_time' : fit_time,\n",
+    "            'train_pred_time' : train_pred_time,\n",
+    "            'test_pred_time' : test_pred_time}"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "test_scores = []\n",
+    "for feature in features.columns:\n",
+    "    results = run_model(Ridge(), 'variable ranking', 20, features[[feature]], target)\n",
+    "    test_score = results['f1_test_score']\n",
+    "    if test_score > 0:\n",
+    "        test_scores.append({'feature': feature, 'score' : test_score})\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "ridge = Ridge(alpha=1.0)\n",
+    "ridge.fit(X_train, y_train)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "ridge_score = ridge.score(X_train, y_train)\n",
+    "ridge_score"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "model_scores = []\n",
+    "if ridge_score > 0:\n",
+    "    model_scores.append({'feature': feature, 'score': ridge_score})"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "pd.DataFrame(model_scores).sort_values('score', ascending = False)"
+   ]
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.6.4"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 2
+}
